@@ -22,6 +22,7 @@ from podcastfy.utils.config import load_config
 import logging
 from langchain.prompts import HumanMessagePromptTemplate
 from abc import ABC, abstractmethod
+from podcastfy.prompt_utils import get_prompt_by_name
 
 logger = logging.getLogger(__name__)
 
@@ -562,8 +563,12 @@ class LongFormContentStrategy(ContentGenerationStrategy, ContentCleanerMixin):
             # Get prompt templates from hub
             logger.debug("Pulling prompt templates from hub")
             try:
-                clean_transcript_prompt = hub.pull(f"{self.content_generator_config['cleaner_prompt_template']}:{self.content_generator_config['cleaner_prompt_commit']}")
-                rewrite_prompt = hub.pull(f"{self.content_generator_config['rewriter_prompt_template']}:{self.content_generator_config['rewriter_prompt_commit']}")
+                # souzatharsis/podcastfy_longform_clean/8c110a0b:
+                # clean_transcript_prompt = hub.pull(f"{self.content_generator_config['cleaner_prompt_template']}:{self.content_generator_config['cleaner_prompt_commit']}")
+                clean_transcript_prompt = get_prompt_by_name("podcastfy_longform_clean")
+                # souzatharsis/podcast_rewriter/8ee296fb:
+                # rewrite_prompt = hub.pull(f"{self.content_generator_config['rewriter_prompt_template']}:{self.content_generator_config['rewriter_prompt_commit']}")
+                rewrite_prompt = get_prompt_by_name("podcast_rewriter")
                 logger.debug("Successfully pulled prompt templates")
             except Exception as e:
                 logger.error(f"Error pulling prompt templates: {str(e)}")
@@ -786,9 +791,9 @@ class ContentGenerator:
         else:
             template = base_template
             commit = base_commit
-
-        prompt_template = hub.pull(f"{template}:{commit}")
-
+        # souzatharsis/podcastfy_multimodal_cleanmarkup/b2365f11
+        # prompt_template = hub.pull(f"{template}:{commit}")
+        prompt_template = get_prompt_by_name("podcastfy_multimodal_cleanmarkup")
         image_path_keys = []
         messages = []
 

@@ -35,6 +35,7 @@ def generate_audio(qa_content):
 
 
 if __name__ == '__main__':
+    #qa_content 有问题，需要Person开头
     qa_content = '''"Welcome to PODCASTIFY - Your Personal Generative AI Podcast! Today, we're diving into the fascinating world of quantum computing. Are you ready to explore how it might revolutionize our future?"
  "Absolutely, I'm thrilled to join in! What's the essence of quantum computing, and how does it differ from our current computing systems?"
  "At its core, quantum computing is a physical device that follows the rules of quantum mechanics to perform high-speed mathematical and logical operations, storing and processing quantum information. Unlike classical computers that use bits to represent data as either 0 or 1, quantum computers use quantum bits, or qubits."
