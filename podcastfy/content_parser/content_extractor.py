@@ -7,6 +7,7 @@ extraction, delegating to specialized extractors based on the source type.
 """
 
 import logging
+import os
 import re
 from typing import List, Union
 from urllib.parse import urlparse
@@ -75,7 +76,7 @@ class ContentExtractor:
 			logger.error(f"Error extracting content from {source}: {str(e)}")
 			raise
 	
-	def generate_topic_content(self, topic: str) -> str:
+	def generate_topic_content(self, topic: str, model_name="gemini") -> str:
 		"""
 		Generate content based on a given topic using a generative model.
 
@@ -85,18 +86,55 @@ class ContentExtractor:
 		Returns:
 			str: Generated content based on the topic.
 		"""
-		try:
-			import google.generativeai as genai
+		print(f"开始搜索数据，topic是: {topic}")
+		import uuid
+		import requests
+		msg = [
+			{
+				"role": "user",
+				"content": topic
+			}
+		]
+		tool = "web-search-pro"
+		url = "https://open.bigmodel.cn/api/paas/v4/tools"
+		request_id = str(uuid.uuid4())
+		data = {
+			"request_id": request_id,
+			"tool": tool,
+			"stream": False,
+			"messages": msg
+		}
 
-			model = genai.GenerativeModel('models/gemini-1.5-flash-002')
-			topic_prompt = f'Be detailed. Search for {topic}'
-			response = model.generate_content(contents=topic_prompt, tools='google_search_retrieval')
-			
-			return response.candidates[0].content.parts[0].text
-		except Exception as e:
-			logger.error(f"Error generating content for topic '{topic}': {str(e)}")
-			raise
-		
+		resp = requests.post(
+			url,
+			json=data,
+			headers={'Authorization': os.environ["ZHIPU_API_KEY"]},
+			timeout=300
+		)
+		json_data = resp.json()
+		message = json_data["choices"][0]["message"]
+		tool_calls = message.get("tool_calls", [])
+		all_contents = ""
+		for tool_res in tool_calls:
+			if "search_result" in tool_res:
+				search_results = tool_res["search_result"]
+				for idx, one_result in enumerate(search_results):
+					title = one_result["title"]
+					link = one_result["link"]
+					content = one_result["content"]
+					all_contents += f"{idx + 1})标题：{title} 链接：{link} 内容：{content}\n\n"
+		return all_contents
+		# try:
+		# 	import google.generativeai as genai
+		#
+		# 	model = genai.GenerativeModel('models/gemini-1.5-flash-002')
+		# 	topic_prompt = f'Be detailed. Search for {topic}'
+		# 	response = model.generate_content(contents=topic_prompt, tools='google_search_retrieval')
+		#
+		# 	return response.candidates[0].content.parts[0].text
+		# except Exception as e:
+		# 	logger.error(f"Error generating content for topic '{topic}': {str(e)}")
+		# 	raise
 
 def main(seed: int = 42) -> None:
 	"""

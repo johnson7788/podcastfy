@@ -157,6 +157,8 @@ class TextToSpeech:
         qa_pairs = self.provider.split_qa(
             text, self.ending_message, self.provider.get_supported_tags()
         )
+        if not qa_pairs:
+            logger.error(f"输入数据经过分割成问答对时，所有数据都没有分成问答对，LLM错误，请检查,原始数据: {text}")
         audio_files = []
         provider_config = self._get_provider_config()
 

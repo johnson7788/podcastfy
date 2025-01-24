@@ -48,6 +48,7 @@ class Config:
 		# Try to find .env file
 		dotenv_path = find_dotenv(usecwd=True)
 		if dotenv_path:
+			print(f"Found .env file. {dotenv_path}")
 			load_dotenv(dotenv_path)
 		else:
 			print("Warning: .env file not found. Using environment variables if available.")

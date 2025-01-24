@@ -25,7 +25,6 @@ from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
 
-
 class LLMBackend:
     def __init__(
         self,
@@ -73,6 +72,7 @@ class LLMBackend:
                 model=self.model_name,
                 temperature=temperature,
                 api_key=os.environ[api_key_label],
+                api_base=os.environ.get("API_BASE_URL")
             )
 
 
@@ -888,14 +888,14 @@ class ContentGenerator:
                 input_texts,
                 prompt_params
             )
-
+            logger.info(f"初步生成的结果: {self.response}")
             # Clean response using the same strategy
-            self.response = strategy.clean(
-                self.response,
-                self.content_generator_config
-            )
+            # self.response = strategy.clean(
+            #     self.response,
+            #     self.content_generator_config
+            # )
                 
-            logger.info(f"Content generated successfully")
+            logger.info(f"Content generated successfully, {self.response}")
 
             # Save output if requested
             if output_filepath:

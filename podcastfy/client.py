@@ -98,15 +98,16 @@ def process_content(
             if text:
                 if longform and len(text.strip()) < 100:
                     logger.info("Text too short for direct long-form generation. Extracting context...")
-                    expanded_content = content_extractor.generate_topic_content(text)
+                    expanded_content = content_extractor.generate_topic_content(text,model_name)
                     combined_content += f"\n\n{expanded_content}"
                 else:
                     combined_content += f"\n\n{text}"
 
             if topic:
-                topic_content = content_extractor.generate_topic_content(topic)
+                topic_content = content_extractor.generate_topic_content(topic,model_name)
                 combined_content += f"\n\n{topic_content}"
-
+            logger.info(f"生成的topic_content: {topic_content}")
+            logger.info(f"生成的combined_content: {combined_content}")
             # Generate Q&A content using output directory from conversation config
             random_filename = f"transcript_{uuid.uuid4().hex}.txt"
             transcript_filepath = os.path.join(
@@ -119,12 +120,13 @@ def process_content(
                 output_filepath=transcript_filepath,
                 longform=longform
             )
+            logger.info(f"生成的问答对, {qa_content}")
 
         if generate_audio:
             api_key = None
             if tts_model != "edge":
                 api_key = getattr(config, f"{tts_model.upper().replace('MULTI', '')}_API_KEY")
-
+            logger.info(f"使用的TTS模型是: {tts_model}，使用的API_KEY是: {api_key}")
             text_to_speech = TextToSpeech(
                 model=tts_model,
                 api_key=api_key,
@@ -136,7 +138,7 @@ def process_content(
                 output_directories.get("audio", "data/audio"), random_filename
             )
             text_to_speech.convert_to_speech(qa_content, audio_file)
-            logger.info(f"Podcast generated successfully using {tts_model} TTS model")
+            logger.info(f"Podcast generated successfully using {tts_model} TTS model, 声音文件是: {audio_file}")
             return audio_file
         else:
             logger.info(f"Transcript generated successfully: {transcript_filepath}")
